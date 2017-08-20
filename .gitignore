@@ -1,3 +1,16 @@
+*.iml
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+
+# API key file
+api_key
+
 # Built application files
 *.apk
 *.ap_
@@ -52,4 +65,8 @@ google-services.json
 # Freeline
 freeline.py
 freeline/
+<<<<<<< HEAD
 freeline_project_description.json
+=======
+freeline_project_description.json
+>>>>>>> First commit: Main Activity Working
