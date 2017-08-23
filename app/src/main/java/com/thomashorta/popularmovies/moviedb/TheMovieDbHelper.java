@@ -13,6 +13,7 @@ public class TheMovieDbHelper {
     private static final String BASE_API_URL = "https://api.themoviedb.org/3";
     private static final String PATH_TOP_RATED = "movie/top_rated";
     private static final String PATH_POPULAR = "movie/popular";
+    private static final String PATH_DETAIL = "movie/";
 
     private static final String BASE_POSTER_URL = "https://image.tmdb.org/t/p";
     private static final String PATH_POSTER_SIZE_THUMB = "w185";
@@ -23,7 +24,7 @@ public class TheMovieDbHelper {
     private static final String PARAMETER_PAGE_KEY = "page";
 
     private static final String PARAMETER_AUTH_API_KEY = "api_key";
-    private static final String PARAMETER_AUTH_API_VALUE = ""; // TODO: put personal api key here
+    private static final String PARAMETER_AUTH_API_VALUE = ""; // put personal api key here
 
     public enum SortCriteria {
         TOP_RATED,
@@ -47,7 +48,6 @@ public class TheMovieDbHelper {
                 uriBuilder.appendQueryParameter(entry.getKey(), entry.getValue());
             }
         }
-        Log.i(TAG, "Building URL:" + uriBuilder.build().toString());
         uriBuilder.appendQueryParameter(PARAMETER_AUTH_API_KEY, PARAMETER_AUTH_API_VALUE);
 
         return uriBuilder.build().toString();
@@ -93,5 +93,9 @@ public class TheMovieDbHelper {
         }
 
         return buildURLString(BASE_POSTER_URL, null, sizePathSegment, posterPath);
+    }
+
+    public static String buildMovieDetailURL(int id) {
+        return buildURLString(BASE_API_URL, null, PATH_DETAIL, String.valueOf(id));
     }
 }

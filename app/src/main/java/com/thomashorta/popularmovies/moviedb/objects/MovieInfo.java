@@ -1,8 +1,10 @@
-package com.thomashorta.popularmovies.moviedb;
+package com.thomashorta.popularmovies.moviedb.objects;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
+import com.thomashorta.popularmovies.moviedb.Util;
+
+import java.util.Date;
 
 public class MovieInfo {
     @SerializedName("id") private Integer id;
@@ -11,7 +13,7 @@ public class MovieInfo {
     @SerializedName("overview") private String overview;
     @SerializedName("original_title") private String originalTitle;
     @SerializedName("original_language") private String originalLanguage;
-    @SerializedName("release_date") private String releaseDate;
+    @SerializedName("release_date") private Date releaseDate;
     @SerializedName("popularity") private Float popularity;
     @SerializedName("vote_count") private Integer voteCount;
     @SerializedName("vote_average") private Float voteAverage;
@@ -21,12 +23,12 @@ public class MovieInfo {
     @SerializedName("video") private Boolean video;
 
     public static MovieInfo fromJson(String jsonMovieInfo) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = Util.createTheMovieDbGson();
         return gson.fromJson(jsonMovieInfo, MovieInfo.class);
     }
 
     public String toJson() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = Util.createTheMovieDbGson();
         return gson.toJson(this);
     }
 
@@ -54,7 +56,7 @@ public class MovieInfo {
         return originalLanguage;
     }
 
-    public String getReleaseDate() {
+    public Date getReleaseDate() {
         return releaseDate;
     }
 

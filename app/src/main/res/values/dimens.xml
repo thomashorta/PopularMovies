@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="default_icon_size">48dp</dimen>
+    <dimen name="detail_title_bg_height">112sp</dimen>
+    <dimen name="detail_horizontal_spacing">16dp</dimen>
+    <dimen name="detail_vertical_spacing_normal">8dp</dimen>
+    <dimen name="detail_vertical_spacing_small">4dp</dimen>
+    <dimen name="detail_vertical_spacing_big">16dp</dimen>
+    <dimen name="detail_text_size_score">14sp</dimen>
+    <dimen name="detail_text_size_summary">16sp</dimen>
+    <dimen name="detail_text_size_duration">20sp</dimen>
+    <dimen name="detail_text_size_release">24sp</dimen>
+    <dimen name="detail_text_size_title">28sp</dimen>
+    <dimen name="detail_poster_width">128dp</dimen>
 </resources>

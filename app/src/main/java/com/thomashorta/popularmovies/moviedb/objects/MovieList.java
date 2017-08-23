@@ -1,22 +1,24 @@
-package com.thomashorta.popularmovies.moviedb;
+package com.thomashorta.popularmovies.moviedb.objects;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
+import com.thomashorta.popularmovies.moviedb.Util;
+
+import java.util.ArrayList;
 
 public class MovieList {
     @SerializedName("page") private Integer page;
-    @SerializedName("results") private MovieInfo[] movieInfoResults;
+    @SerializedName("results") private ArrayList<MovieInfo> movieInfoResults;
     @SerializedName("total_results") private Integer totalResults;
     @SerializedName("total_pages") private Integer totalPages;
 
     public static MovieList fromJson(String json) {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = Util.createTheMovieDbGson();
         return gson.fromJson(json, MovieList.class);
     }
 
     public String toJson() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = Util.createTheMovieDbGson();
         return gson.toJson(this);
     }
 
@@ -24,7 +26,7 @@ public class MovieList {
         return page;
     }
 
-    public MovieInfo[] getMovieInfoResults() {
+    public ArrayList<MovieInfo> getMovieInfoResults() {
         return movieInfoResults;
     }
 

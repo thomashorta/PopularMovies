@@ -8,14 +8,18 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
-import com.thomashorta.popularmovies.moviedb.MovieInfo;
-import com.thomashorta.popularmovies.moviedb.MovieList;
 import com.thomashorta.popularmovies.moviedb.TheMovieDbHelper;
+import com.thomashorta.popularmovies.moviedb.objects.MovieInfo;
+import com.thomashorta.popularmovies.moviedb.objects.MovieList;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class MovieGridAdapter
         extends RecyclerView.Adapter<MovieGridAdapter.MoviePosterViewHolder> {
 
-    private MovieInfo[] mMovieInfoList;
+    private ArrayList<MovieInfo> mMovieInfoList;
     private OnMovieClickListener mMovieClickListener;
 
     public interface OnMovieClickListener {
@@ -36,18 +40,25 @@ public class MovieGridAdapter
 
     @Override
     public void onBindViewHolder(MoviePosterViewHolder holder, int position) {
-        String posterPath = mMovieInfoList[position].getPosterPath();
+        String posterPath = mMovieInfoList.get(position).getPosterPath();
         holder.setMoviePosterPath(posterPath);
     }
 
     @Override
     public int getItemCount() {
-        return mMovieInfoList != null ? mMovieInfoList.length : 0;
+        return mMovieInfoList != null ? mMovieInfoList.size() : 0;
     }
 
     public void setMovieList(MovieList movieList) {
         mMovieInfoList = movieList != null ? movieList.getMovieInfoResults() : null;
         notifyDataSetChanged();
+    }
+
+    public void addMovieList(MovieList movieList) {
+        if (movieList != null) {
+            mMovieInfoList.addAll(movieList.getMovieInfoResults());
+            notifyDataSetChanged();
+        }
     }
 
     public void clear() {
@@ -82,7 +93,7 @@ public class MovieGridAdapter
         @Override
         public void onClick(View v) {
             if (mMovieClickListener != null) {
-                mMovieClickListener.onMovieClick(mMovieInfoList[getAdapterPosition()]);
+                mMovieClickListener.onMovieClick(mMovieInfoList.get(getAdapterPosition()));
             }
         }
     }

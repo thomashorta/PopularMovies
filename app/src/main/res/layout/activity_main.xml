@@ -8,39 +8,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <ProgressBar
-        android:id="@+id/pb_loading_indicator"
-        android:layout_width="@dimen/default_icon_size"
-        android:layout_height="@dimen/default_icon_size"
-        android:layout_gravity="center"
-        android:visibility="invisible"/>
-
-    <LinearLayout
-        android:id="@+id/error_reload_message"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="invisible"
-        android:orientation="vertical">
-
-        <ImageView
-            android:id="@+id/iv_reload_button"
-            android:layout_width="@dimen/default_icon_size"
-            android:layout_height="@dimen/default_icon_size"
-            android:layout_gravity="center"
-            android:layout_marginBottom="16dp"
-            android:src="@drawable/ic_refresh_24dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:textSize="18sp"
-            android:text="@string/error_message"/>
-    </LinearLayout>
-
+    <include layout="@layout/merge_progress_error"/>
 
 </FrameLayout>

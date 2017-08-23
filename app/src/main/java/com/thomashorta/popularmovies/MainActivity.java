@@ -1,7 +1,7 @@
 package com.thomashorta.popularmovies;
 
 import android.content.DialogInterface;
-import android.os.AsyncTask;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -12,36 +12,30 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.thomashorta.popularmovies.data.PopularMoviesPreferences;
-import com.thomashorta.popularmovies.moviedb.MovieInfo;
-import com.thomashorta.popularmovies.moviedb.MovieList;
+import com.thomashorta.popularmovies.moviedb.MovieListLoader;
 import com.thomashorta.popularmovies.moviedb.TheMovieDbHelper;
+import com.thomashorta.popularmovies.moviedb.objects.MovieInfo;
+import com.thomashorta.popularmovies.moviedb.objects.MovieList;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
-
 public class MainActivity extends AppCompatActivity
-        implements MovieGridAdapter.OnMovieClickListener {
+        implements MovieGridAdapter.OnMovieClickListener, MovieListLoader.OnLoadListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
-    private static final int NUMBER_OF_ROWS = 2;
 
     private RecyclerView mMovieGrid;
     private ProgressBar mLoadingIndicator;
     private View mErrorReloadMessage;
 
+    private MovieListLoader mMovieListLoader;
     private MovieGridAdapter mMovieGridAdapter;
+
+    private int mGridColumns;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,36 +45,45 @@ public class MainActivity extends AppCompatActivity
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
         mErrorReloadMessage = findViewById(R.id.error_reload_message);
 
+        mGridColumns = getResources().getInteger(R.integer.grid_columns);
+        final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, mGridColumns);
+
         mMovieGrid = (RecyclerView) findViewById(R.id.rv_movie_grid);
-        mMovieGrid.setLayoutManager(new GridLayoutManager(this, NUMBER_OF_ROWS));
+        mMovieGrid.setLayoutManager(gridLayoutManager);
         mMovieGrid.setHasFixedSize(true);
 
         mMovieGridAdapter = new MovieGridAdapter(this);
         mMovieGrid.setAdapter(mMovieGridAdapter);
-
-        ImageView reloadButton = (ImageView) findViewById(R.id.iv_reload_button);
-        reloadButton.setOnClickListener(new View.OnClickListener() {
+        mMovieGrid.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onClick(View v) {
-                mMovieGridAdapter.clear();
-                loadMovieList();
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                if (dy < 0) return;
+
+                int itemCount = gridLayoutManager.getItemCount();
+                int lastVisibleItem = gridLayoutManager.findLastVisibleItemPosition();
+                int visibleThreshold = getResources().getInteger(R.integer.visible_threshold);
+
+                Log.d(TAG, "count=" + itemCount + "/lastItem=" + lastVisibleItem + "/threshold=" + visibleThreshold);
+                if (!mMovieListLoader.isLoading() && mMovieListLoader.hasMore()
+                        && lastVisibleItem >= itemCount - visibleThreshold) {
+                    mMovieListLoader.loadMore();
+                }
             }
         });
 
-        loadMovieList();
+        mMovieListLoader =
+                new MovieListLoader(PopularMoviesPreferences.getPreferredSortCriteria(), this);
+        mMovieListLoader.loadFirst();
     }
 
     @Override
     public void onMovieClick(MovieInfo itemMovieInfo) {
-        // for now just display a Toast
-        Toast.makeText(this, itemMovieInfo.getTitle(), Toast.LENGTH_SHORT).show();
-    }
-
-    private void loadMovieList() {
-        showMovieGridView();
-
-        TheMovieDbHelper.SortCriteria sortCriteria = PopularMoviesPreferences.getPreferredSortCriteria();
-        new FetchMoviesTask(sortCriteria).execute();
+        Log.d(TAG, "movie_id: " + itemMovieInfo.getId());
+        Intent intent = new Intent(this, MovieDetailsActivity.class);
+        intent.putExtra(MovieDetailsActivity.EXTRA_MOVIE_ID, itemMovieInfo.getId());
+        startActivity(intent);
     }
 
     private void showMovieGridView() {
@@ -113,8 +116,7 @@ public class MainActivity extends AppCompatActivity
                     public void onClick(DialogInterface dialog, int which) {
                         TheMovieDbHelper.SortCriteria criteria = sortCriteriaOptions.get(which);
                         PopularMoviesPreferences.setPreferredSortCriteria(criteria);
-                        mMovieGridAdapter.clear();
-                        loadMovieList();
+                        mMovieListLoader.setSortCriteria(criteria);
                         dialog.dismiss();
                     }
                 });
@@ -140,58 +142,31 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    public class FetchMoviesTask extends AsyncTask<Integer, Void, String> {
-
-        private TheMovieDbHelper.SortCriteria mSortCriteria;
-
-        public FetchMoviesTask(TheMovieDbHelper.SortCriteria sortCriteria) {
-            mSortCriteria = sortCriteria;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
+    @Override
+    public void onPreLoad(boolean isFirstLoad) {
+        if (isFirstLoad) {
+            mMovieGridAdapter.clear();
+            showMovieGridView();
             mLoadingIndicator.setVisibility(View.VISIBLE);
         }
+    }
 
-        @Override
-        protected String doInBackground(Integer... params) {
-            String movieListJson;
-
-            Integer page = (params != null && params.length != 0) ? params[0] : null;
-            String requestUrl = TheMovieDbHelper.buildMovieListURL(mSortCriteria, page);
-
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url(requestUrl)
-                    .build();
-
-            try {
-                Response response = client.newCall(request).execute();
-                ResponseBody responseBody = response.body();
-
-                if (response.code() == HttpURLConnection.HTTP_OK && responseBody != null) {
-                    movieListJson = responseBody.string();
-                } else {
-                    throw new IOException("Got error response code from server.");
-                }
-            } catch (IOException e) {
-                movieListJson = null;
-                Log.w(TAG, "An error occurred when trying to request data.", e);
-            }
-
-            return movieListJson;
-        }
-
-        @Override
-        protected void onPostExecute(String movieListJson) {
+    @Override
+    public void onLoadSuccess(MovieList loadedList, boolean isFirstLoad) {
+        if (isFirstLoad) {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
-            if (movieListJson != null) {
-                showMovieGridView();
-                mMovieGridAdapter.setMovieList(MovieList.fromJson(movieListJson));
-            } else {
-                showErrorMessage();
-            }
+            showMovieGridView();
+            mMovieGridAdapter.setMovieList(loadedList);
+        } else {
+            mMovieGridAdapter.addMovieList(loadedList);
+        }
+    }
+
+    @Override
+    public void onLoadError(boolean isFirstLoad) {
+        if (isFirstLoad) {
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
+            showErrorMessage();
         }
     }
 }
