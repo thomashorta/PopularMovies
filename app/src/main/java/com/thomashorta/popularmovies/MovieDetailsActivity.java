@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -28,6 +29,8 @@ import okhttp3.ResponseBody;
 public class MovieDetailsActivity extends AppCompatActivity {
 
     public static final String EXTRA_MOVIE_ID = "extra_movie_id";
+    public static final String EXTRA_TITLE_BG = "extra_title_bg";
+    public static final String EXTRA_TITLE_COLOR = "extra_title_color";
 
     private ViewGroup mRootLayout;
     private ProgressBar mLoadingIndicator;
@@ -59,6 +62,16 @@ public class MovieDetailsActivity extends AppCompatActivity {
             Toast.makeText(this, "Invalid movie selected.", Toast.LENGTH_SHORT).show();
             finish();
             return;
+        }
+
+        if (intent.hasExtra(EXTRA_TITLE_BG)) {
+            FrameLayout titleBg = (FrameLayout) findViewById(R.id.frame_detail_bg);
+            titleBg.setBackgroundColor(intent.getIntExtra(EXTRA_TITLE_BG, 0));
+        }
+
+        if (intent.hasExtra(EXTRA_TITLE_COLOR)) {
+            TextView titleBg = (TextView) findViewById(R.id.tv_detail_title);
+            titleBg.setTextColor(intent.getIntExtra(EXTRA_TITLE_COLOR, 0));
         }
 
         mMovieId = intent.getIntExtra(EXTRA_MOVIE_ID, 0);

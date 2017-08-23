@@ -13,8 +13,6 @@ import com.thomashorta.popularmovies.moviedb.objects.MovieInfo;
 import com.thomashorta.popularmovies.moviedb.objects.MovieList;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class MovieGridAdapter
         extends RecyclerView.Adapter<MovieGridAdapter.MoviePosterViewHolder> {
@@ -23,7 +21,7 @@ public class MovieGridAdapter
     private OnMovieClickListener mMovieClickListener;
 
     public interface OnMovieClickListener {
-        void onMovieClick(MovieInfo itemMovieInfo);
+        void onMovieClick(MovieInfo itemMovieInfo, ImageView itemImageView);
     }
 
     public MovieGridAdapter(OnMovieClickListener listener) {
@@ -93,7 +91,8 @@ public class MovieGridAdapter
         @Override
         public void onClick(View v) {
             if (mMovieClickListener != null) {
-                mMovieClickListener.onMovieClick(mMovieInfoList.get(getAdapterPosition()));
+                mMovieClickListener.onMovieClick(mMovieInfoList.get(getAdapterPosition()),
+                        mImageViewPoster);
             }
         }
     }

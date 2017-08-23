@@ -1,14 +1,11 @@
 package com.thomashorta.popularmovies.moviedb;
 
 import android.net.Uri;
-import android.util.Log;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class TheMovieDbHelper {
-
-    private static final String TAG = TheMovieDbHelper.class.getSimpleName();
 
     private static final String BASE_API_URL = "https://api.themoviedb.org/3";
     private static final String PATH_TOP_RATED = "movie/top_rated";

@@ -2,16 +2,19 @@ package com.thomashorta.popularmovies;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.thomashorta.popularmovies.data.PopularMoviesPreferences;
@@ -26,16 +29,12 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity
         implements MovieGridAdapter.OnMovieClickListener, MovieListLoader.OnLoadListener {
 
-    private static final String TAG = MainActivity.class.getSimpleName();
-
     private RecyclerView mMovieGrid;
     private ProgressBar mLoadingIndicator;
     private View mErrorReloadMessage;
 
     private MovieListLoader mMovieListLoader;
     private MovieGridAdapter mMovieGridAdapter;
-
-    private int mGridColumns;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +44,8 @@ public class MainActivity extends AppCompatActivity
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
         mErrorReloadMessage = findViewById(R.id.error_reload_message);
 
-        mGridColumns = getResources().getInteger(R.integer.grid_columns);
-        final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, mGridColumns);
+        int gridColumns = getResources().getInteger(R.integer.grid_columns);
+        final GridLayoutManager gridLayoutManager = new GridLayoutManager(this, gridColumns);
 
         mMovieGrid = (RecyclerView) findViewById(R.id.rv_movie_grid);
         mMovieGrid.setLayoutManager(gridLayoutManager);
@@ -65,7 +64,6 @@ public class MainActivity extends AppCompatActivity
                 int lastVisibleItem = gridLayoutManager.findLastVisibleItemPosition();
                 int visibleThreshold = getResources().getInteger(R.integer.visible_threshold);
 
-                Log.d(TAG, "count=" + itemCount + "/lastItem=" + lastVisibleItem + "/threshold=" + visibleThreshold);
                 if (!mMovieListLoader.isLoading() && mMovieListLoader.hasMore()
                         && lastVisibleItem >= itemCount - visibleThreshold) {
                     mMovieListLoader.loadMore();
@@ -79,10 +77,20 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onMovieClick(MovieInfo itemMovieInfo) {
-        Log.d(TAG, "movie_id: " + itemMovieInfo.getId());
+    public void onMovieClick(MovieInfo itemMovieInfo, ImageView itemImageView) {
         Intent intent = new Intent(this, MovieDetailsActivity.class);
         intent.putExtra(MovieDetailsActivity.EXTRA_MOVIE_ID, itemMovieInfo.getId());
+
+        Bitmap posterBitmap = ((BitmapDrawable) itemImageView.getDrawable()).getBitmap();
+        if (posterBitmap != null) {
+            Palette palette = Palette.from(posterBitmap).generate();
+            int titleBgColor = palette.getDarkMutedColor(getResources().getColor(R.color.defaultTitleBg));
+            int titleTextColor = palette.getLightVibrantColor(getResources().getColor(R.color.defaultTitleText));
+
+            intent.putExtra(MovieDetailsActivity.EXTRA_TITLE_BG, titleBgColor);
+            intent.putExtra(MovieDetailsActivity.EXTRA_TITLE_COLOR, titleTextColor);
+        }
+
         startActivity(intent);
     }
 
@@ -117,6 +125,7 @@ public class MainActivity extends AppCompatActivity
                         TheMovieDbHelper.SortCriteria criteria = sortCriteriaOptions.get(which);
                         PopularMoviesPreferences.setPreferredSortCriteria(criteria);
                         mMovieListLoader.setSortCriteria(criteria);
+                        mMovieListLoader.loadFirst();
                         dialog.dismiss();
                     }
                 });

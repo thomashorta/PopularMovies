@@ -3,4 +3,7 @@
     <color name="colorPrimary">#202020</color>
     <color name="colorPrimaryDark">#121212</color>
     <color name="colorAccent">#BABABA</color>
+
+    <color name="defaultTitleBg">#3F3F3F</color>
+    <color name="defaultTitleText">#AAFFFFFF</color>
 </resources>

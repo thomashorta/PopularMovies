@@ -12,9 +12,10 @@
         android:orientation="vertical">
 
         <FrameLayout
+            android:id="@+id/frame_detail_bg"
             android:layout_width="match_parent"
             android:layout_height="@dimen/detail_title_bg_height"
-            android:background="@color/colorAccent"
+            android:background="@color/defaultTitleBg"
             android:elevation="4dp"
             android:paddingEnd="@dimen/detail_horizontal_spacing"
             android:paddingStart="@dimen/detail_horizontal_spacing">
@@ -26,6 +27,7 @@
                 android:layout_gravity="center_vertical"
                 android:ellipsize="end"
                 android:maxLines="1"
+                android:textColor="@color/defaultTitleText"
                 android:textSize="@dimen/detail_text_size_title"
                 android:textStyle="bold" />
 
@@ -45,6 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:adjustViewBounds="true"
+                android:contentDescription="@string/movie_poster_description"
                 android:src="@drawable/placeholder_image_27x40" />
 
             <ScrollView
