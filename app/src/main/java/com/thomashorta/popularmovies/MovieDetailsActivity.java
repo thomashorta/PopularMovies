@@ -105,7 +105,7 @@ public class MovieDetailsActivity extends AppCompatActivity {
 
         // set title TextView
         textViewReference = (TextView) findViewById(R.id.tv_detail_title);
-        textViewReference.setText(movieDetails.getTitle());
+        textViewReference.setText(movieDetails.getOriginalTitle());
 
         // set release TextView
         textViewReference = (TextView) findViewById(R.id.tv_detail_release);
