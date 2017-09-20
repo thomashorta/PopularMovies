@@ -1,6 +1,7 @@
-package com.thomashorta.popularmovies;
+package com.thomashorta.popularmovies.adapters;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
+import com.thomashorta.popularmovies.R;
+import com.thomashorta.popularmovies.data.favorites.FavoriteContract;
 import com.thomashorta.popularmovies.moviedb.TheMovieDbHelper;
 import com.thomashorta.popularmovies.moviedb.objects.MovieInfo;
 import com.thomashorta.popularmovies.moviedb.objects.MovieList;
@@ -38,8 +41,9 @@ public class MovieGridAdapter
 
     @Override
     public void onBindViewHolder(MoviePosterViewHolder holder, int position) {
-        String posterPath = mMovieInfoList.get(position).getPosterPath();
-        holder.setMoviePosterPath(posterPath);
+        MovieInfo movieInfo = mMovieInfoList.get(position);
+        String posterPath = movieInfo.getPosterPath();
+        holder.setMoviePoster(posterPath, movieInfo.getTitle());
     }
 
     @Override
@@ -48,15 +52,44 @@ public class MovieGridAdapter
     }
 
     public void setMovieList(MovieList movieList) {
-        mMovieInfoList = movieList != null ? movieList.getMovieInfoResults() : null;
+        mMovieInfoList = movieList != null ? movieList.getResults() : null;
         notifyDataSetChanged();
     }
 
     public void addMovieList(MovieList movieList) {
         if (movieList != null) {
-            mMovieInfoList.addAll(movieList.getMovieInfoResults());
+            mMovieInfoList.addAll(movieList.getResults());
             notifyDataSetChanged();
         }
+    }
+
+    public ArrayList<MovieInfo> getMovieInfoList() {
+        return mMovieInfoList;
+    }
+
+    public void setMovieInfoList(ArrayList<MovieInfo> movieInfoList) {
+        mMovieInfoList = movieInfoList;
+        notifyDataSetChanged();
+    }
+
+    public void setFavoritesCursor(Cursor cursor) {
+        if (cursor == null || cursor.isClosed()) return;
+        // transform in movieinfo array
+        int idxId = cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_TMDB_ID);
+        int idxTitle = cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_TITLE);
+        int idxPoster = cursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_POSTER_PATH);
+
+        ArrayList<MovieInfo> movieInfoList = new ArrayList<>(cursor.getCount());
+        cursor.moveToFirst();
+        while (cursor.moveToNext()) {
+            MovieInfo movie = new MovieInfo(cursor.getInt(idxId),
+                    cursor.getString(idxTitle),
+                    cursor.getString(idxPoster));
+            movieInfoList.add(movie);
+        }
+
+        mMovieInfoList = movieInfoList;
+        notifyDataSetChanged();
     }
 
     public void clear() {
@@ -74,8 +107,9 @@ public class MovieGridAdapter
             mImageViewPoster = (ImageView) itemView.findViewById(R.id.iv_movie_poster);
         }
 
-        public void setMoviePosterPath(String posterPath) {
+        public void setMoviePoster(String posterPath, String movieName) {
             Context context = mImageViewPoster.getContext();
+            mImageViewPoster.setContentDescription(movieName);
             // Cancel any current requests (as this view is being recycled and used again)
             Picasso.with(context).cancelRequest(mImageViewPoster);
             // Load the current movie poster

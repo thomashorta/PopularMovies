@@ -11,6 +11,8 @@ public class TheMovieDbHelper {
     private static final String PATH_TOP_RATED = "movie/top_rated";
     private static final String PATH_POPULAR = "movie/popular";
     private static final String PATH_DETAIL = "movie/";
+    private static final String PATH_TRAILERS = "videos";
+    private static final String PATH_REVIEWS = "reviews";
 
     private static final String BASE_POSTER_URL = "https://image.tmdb.org/t/p";
     private static final String PATH_POSTER_SIZE_THUMB = "w185";
@@ -25,7 +27,8 @@ public class TheMovieDbHelper {
 
     public enum SortCriteria {
         TOP_RATED,
-        POPULAR
+        POPULAR,
+        FAVORITES
     }
 
     public enum PosterSize {
@@ -62,13 +65,13 @@ public class TheMovieDbHelper {
                 break;
         }
 
-        HashMap<String, String> queryParameters = null;
+        HashMap<String, String> params = null;
         if (page != null) {
-            queryParameters = new HashMap<>(1);
-            queryParameters.put(PARAMETER_PAGE_KEY, String.valueOf(page));
+            params = new HashMap<>(1);
+            params.put(PARAMETER_PAGE_KEY, String.valueOf(page));
         }
 
-        return buildURLString(BASE_API_URL, queryParameters, sortPathSegment);
+        return buildURLString(BASE_API_URL, params, sortPathSegment);
     }
 
     public static String buildPosterURL(String posterPath, PosterSize posterSize) {
@@ -92,7 +95,20 @@ public class TheMovieDbHelper {
         return buildURLString(BASE_POSTER_URL, null, sizePathSegment, posterPath);
     }
 
-    public static String buildMovieDetailURL(int id) {
+    public static String buildMovieDetailsURL(long id) {
         return buildURLString(BASE_API_URL, null, PATH_DETAIL, String.valueOf(id));
+    }
+
+    public static String buildMovieTrailersURL(long id) {
+        return buildURLString(BASE_API_URL, null, PATH_DETAIL, String.valueOf(id), PATH_TRAILERS);
+    }
+
+    public static String buildMovieReviewsURL(long id, Integer page) {
+        HashMap<String, String> params = null;
+        if (page != null) {
+            params = new HashMap<>(1);
+            params.put(PARAMETER_PAGE_KEY, String.valueOf(page));
+        }
+        return buildURLString(BASE_API_URL, params, PATH_DETAIL, String.valueOf(id), PATH_REVIEWS);
     }
 }

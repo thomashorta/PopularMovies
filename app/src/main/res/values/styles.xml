@@ -8,4 +8,50 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="DetailLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">sans-serif-light</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+    
+    <style name="MovieTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textColor">@color/default_title_text</item>
+        <item name="android:textSize">@dimen/detail_text_size_title</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="DetailRelease">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:lines">1</item>
+        <item name="android:textSize">@dimen/detail_text_size_release</item>
+    </style>
+
+    <style name="DetailDuration">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:lines">1</item>
+        <item name="android:textSize">@dimen/detail_text_size_duration</item>
+        <item name="android:textStyle">bold|italic</item>
+    </style>
+
+    <style name="DetailScore">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:lines">1</item>
+        <item name="android:textSize">@dimen/detail_text_size_score</item>
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+
+    <style name="DetailSummary">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">@dimen/detail_text_size_summary</item>
+    </style>
+
 </resources>

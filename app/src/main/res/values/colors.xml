@@ -4,6 +4,11 @@
     <color name="colorPrimaryDark">#121212</color>
     <color name="colorAccent">#BABABA</color>
 
-    <color name="defaultTitleBg">#3F3F3F</color>
-    <color name="defaultTitleText">#AAFFFFFF</color>
+    <color name="default_title_bg">#3F3F3F</color>
+    <color name="default_title_text">#AAFFFFFF</color>
+
+    <color name="activated">#B2EBF2</color>
+
+    <color name="favorite_on">#FFD700</color>
+    <color name="favorite_off">#8F8F8F</color>
 </resources>

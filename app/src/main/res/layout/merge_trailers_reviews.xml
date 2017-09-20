@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent"
+        android:layout_marginTop="@dimen/detail_vertical_spacing_big"
+        android:layout_marginBottom="@dimen/detail_vertical_spacing_big"/>
+
+    <TextView
+        android:text="@string/trailers_label"
+        style="@style/DetailLabel"/>
+
+    <TextView
+        android:id="@+id/tv_trailer_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:paddingStart="@dimen/detail_horizontal_spacing"
+        android:paddingEnd="@dimen/detail_horizontal_spacing"
+        android:layout_marginBottom="@dimen/detail_vertical_spacing_big"
+        android:layout_marginTop="@dimen/detail_vertical_spacing_normal"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_trailer_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/detail_vertical_spacing_normal"/>
+
+    <View
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:background="@color/colorAccent"
+        android:layout_marginTop="@dimen/detail_vertical_spacing_big"
+        android:layout_marginBottom="@dimen/detail_vertical_spacing_big"/>
+
+    <TextView
+        android:text="@string/reviews_label"
+        style="@style/DetailLabel"/>
+
+    <TextView
+        android:id="@+id/tv_review_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:paddingStart="@dimen/detail_horizontal_spacing"
+        android:paddingEnd="@dimen/detail_horizontal_spacing"
+        android:layout_marginBottom="@dimen/detail_vertical_spacing_big"
+        android:layout_marginTop="@dimen/detail_vertical_spacing_normal"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_review_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/detail_vertical_spacing_normal"/>
+</merge>

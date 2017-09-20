@@ -52,6 +52,7 @@ captures/
 .idea/gradle.xml
 .idea/dictionaries
 .idea/libraries
+.idea/
 
 # Keystore files
 *.jks
@@ -65,8 +66,4 @@ google-services.json
 # Freeline
 freeline.py
 freeline/
-<<<<<<< HEAD
 freeline_project_description.json
-=======
-freeline_project_description.json
->>>>>>> First commit: Main Activity Working

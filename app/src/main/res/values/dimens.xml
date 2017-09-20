@@ -12,4 +12,5 @@
     <dimen name="detail_text_size_release">24sp</dimen>
     <dimen name="detail_text_size_title">28sp</dimen>
     <dimen name="detail_poster_width">128dp</dimen>
+    <dimen name="favorite_size">40dp</dimen>
 </resources>

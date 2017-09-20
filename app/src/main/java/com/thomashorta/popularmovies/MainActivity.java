@@ -2,9 +2,13 @@ package com.thomashorta.popularmovies;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
@@ -17,8 +21,11 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import com.thomashorta.popularmovies.adapters.MovieGridAdapter;
 import com.thomashorta.popularmovies.data.PopularMoviesPreferences;
-import com.thomashorta.popularmovies.moviedb.MovieListLoader;
+import com.thomashorta.popularmovies.data.favorites.FavoriteContract;
+import com.thomashorta.popularmovies.loaders.MovieListLoader;
+import com.thomashorta.popularmovies.loaders.PagedListLoader;
 import com.thomashorta.popularmovies.moviedb.TheMovieDbHelper;
 import com.thomashorta.popularmovies.moviedb.objects.MovieInfo;
 import com.thomashorta.popularmovies.moviedb.objects.MovieList;
@@ -27,7 +34,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements MovieGridAdapter.OnMovieClickListener, MovieListLoader.OnLoadListener {
+        implements MovieGridAdapter.OnMovieClickListener {
+    public static final String EXTRA_SAVED_MOVIE_LIST = "saved_movie_info_list";
+    private static final int FAVORITE_LOADER_ID = 984;
 
     private RecyclerView mMovieGrid;
     private ProgressBar mLoadingIndicator;
@@ -64,16 +73,29 @@ public class MainActivity extends AppCompatActivity
                 int lastVisibleItem = gridLayoutManager.findLastVisibleItemPosition();
                 int visibleThreshold = getResources().getInteger(R.integer.visible_threshold);
 
-                if (!mMovieListLoader.isLoading() && mMovieListLoader.hasMore()
+                if (mMovieListLoader != null
+                        && !mMovieListLoader.isLoading() && mMovieListLoader.hasMore()
                         && lastVisibleItem >= itemCount - visibleThreshold) {
-                    mMovieListLoader.loadMore();
+                    startLoader(mMovieListLoader.getLastLoadedPage() + 1);
                 }
             }
         });
 
-        mMovieListLoader =
-                new MovieListLoader(PopularMoviesPreferences.getPreferredSortCriteria(), this);
-        mMovieListLoader.loadFirst();
+        // reload adapter state
+        if (savedInstanceState != null) {
+            ArrayList<MovieInfo> savedMovieList = savedInstanceState
+                    .getParcelableArrayList(EXTRA_SAVED_MOVIE_LIST);
+            if (savedMovieList != null) mMovieGridAdapter.setMovieInfoList(savedMovieList);
+        }
+
+        startLoader(null);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        ArrayList<MovieInfo> movieInfoList = mMovieGridAdapter.getMovieInfoList();
+        outState.putParcelableArrayList(EXTRA_SAVED_MOVIE_LIST, movieInfoList);
     }
 
     @Override
@@ -84,8 +106,8 @@ public class MainActivity extends AppCompatActivity
         Bitmap posterBitmap = ((BitmapDrawable) itemImageView.getDrawable()).getBitmap();
         if (posterBitmap != null) {
             Palette palette = Palette.from(posterBitmap).generate();
-            int titleBgColor = palette.getDarkMutedColor(getResources().getColor(R.color.defaultTitleBg));
-            int titleTextColor = palette.getLightVibrantColor(getResources().getColor(R.color.defaultTitleText));
+            int titleBgColor = palette.getDarkMutedColor(getResources().getColor(R.color.default_title_bg));
+            int titleTextColor = palette.getLightVibrantColor(getResources().getColor(R.color.default_title_text));
 
             intent.putExtra(MovieDetailsActivity.EXTRA_TITLE_BG, titleBgColor);
             intent.putExtra(MovieDetailsActivity.EXTRA_TITLE_COLOR, titleTextColor);
@@ -94,12 +116,39 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
+    private void startLoader(Integer page) {
+        LoaderManager lm = getSupportLoaderManager();
+        if (PopularMoviesPreferences.getPreferredSortCriteria() ==
+                TheMovieDbHelper.SortCriteria.FAVORITES) {
+            mMovieListLoader = null;
+            lm.initLoader(FAVORITE_LOADER_ID, null, mFavoritesLoaderCallbacks);
+        } else {
+            Bundle b = new Bundle(1);
+            if (page != null) b.putInt(PagedListLoader.EXTRA_PAGE_TO_LOAD, page);
+            if (mMovieListLoader != null) {
+                mMovieListLoader = (MovieListLoader) lm.restartLoader(MovieListLoader.LOADER_ID, b,
+                        mMovieListLoaderCallbacks);
+            } else {
+                mMovieListLoader = (MovieListLoader) lm.initLoader(MovieListLoader.LOADER_ID, b,
+                        mMovieListLoaderCallbacks);
+            }
+        }
+    }
+
+    private void showLoadingIndicator() {
+        mMovieGridAdapter.clear();
+        showMovieGridView();
+        mLoadingIndicator.setVisibility(View.VISIBLE);
+    }
+
     private void showMovieGridView() {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
         mErrorReloadMessage.setVisibility(View.INVISIBLE);
         mMovieGrid.setVisibility(View.VISIBLE);
     }
 
     private void showErrorMessage() {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
         mMovieGrid.setVisibility(View.INVISIBLE);
         mErrorReloadMessage.setVisibility(View.VISIBLE);
     }
@@ -112,20 +161,21 @@ public class MainActivity extends AppCompatActivity
         sortCriteriaOptions.add(TheMovieDbHelper.SortCriteria.TOP_RATED);
         stringOptions.add(getString(R.string.option_popular));
         sortCriteriaOptions.add(TheMovieDbHelper.SortCriteria.POPULAR);
+        stringOptions.add(getString(R.string.option_favorites));
+        sortCriteriaOptions.add(TheMovieDbHelper.SortCriteria.FAVORITES);
 
         int selectedItem = sortCriteriaOptions.indexOf(
                 PopularMoviesPreferences.getPreferredSortCriteria());
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(R.string.dialog_choose_sort_criteria_title);
-        builder.setSingleChoiceItems(stringOptions.toArray(new String[2]), selectedItem,
+        builder.setTitle(R.string.dialog_choose_display_criteria_title);
+        builder.setSingleChoiceItems(stringOptions.toArray(new String[3]), selectedItem,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         TheMovieDbHelper.SortCriteria criteria = sortCriteriaOptions.get(which);
                         PopularMoviesPreferences.setPreferredSortCriteria(criteria);
-                        mMovieListLoader.setSortCriteria(criteria);
-                        mMovieListLoader.loadFirst();
+                        startLoader(null);
                         dialog.dismiss();
                     }
                 });
@@ -151,31 +201,75 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onPreLoad(boolean isFirstLoad) {
-        if (isFirstLoad) {
-            mMovieGridAdapter.clear();
-            showMovieGridView();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-        }
-    }
+    private LoaderManager.LoaderCallbacks<Cursor> mFavoritesLoaderCallbacks =
+            new LoaderManager.LoaderCallbacks<Cursor>() {
+                @Override
+                public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                    showLoadingIndicator();
+                    return new CursorLoader(MainActivity.this,
+                            FavoriteContract.FavoriteEntry.CONTENT_URI, null, null, null, null);
+                }
 
-    @Override
-    public void onLoadSuccess(MovieList loadedList, boolean isFirstLoad) {
-        if (isFirstLoad) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-            showMovieGridView();
-            mMovieGridAdapter.setMovieList(loadedList);
-        } else {
-            mMovieGridAdapter.addMovieList(loadedList);
-        }
-    }
+                @Override
+                public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+                    if (data != null) {
+                        // success
+                        if (data.getCount() != 0) {
+                            // not empty
+                            showMovieGridView();
+                            mMovieGridAdapter.setFavoritesCursor(data);
+                        } else {
+                            // just show empty
+                            mMovieGridAdapter.clear();
+                            showMovieGridView();
+                        }
+                    } else {
+                        // error
+                        showErrorMessage();
+                    }
+                    loader.abandon();
+                }
 
-    @Override
-    public void onLoadError(boolean isFirstLoad) {
-        if (isFirstLoad) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-            showErrorMessage();
-        }
-    }
+                @Override
+                public void onLoaderReset(Loader<Cursor> loader) {
+
+                }
+            };
+
+    private LoaderManager.LoaderCallbacks<MovieList> mMovieListLoaderCallbacks =
+            new LoaderManager.LoaderCallbacks<MovieList>() {
+                @Override
+                public Loader<MovieList> onCreateLoader(int id, Bundle args) {
+                    int page = args != null ? args.getInt(PagedListLoader.EXTRA_PAGE_TO_LOAD, 1) : 1;
+                    if (page == 1) showLoadingIndicator();
+                    return new MovieListLoader(MainActivity.this,
+                            PopularMoviesPreferences.getPreferredSortCriteria(), page);
+                }
+
+                @Override
+                public void onLoadFinished(Loader<MovieList> loader, MovieList data) {
+                    MovieListLoader mlLoader = (MovieListLoader) loader;
+
+                    if (data != null) {
+                        // success
+                        if (mlLoader.isFirstPage()) {
+                            showMovieGridView();
+                            mMovieGridAdapter.setMovieList(data);
+                        } else {
+                            mMovieGridAdapter.addMovieList(data);
+                        }
+                    } else {
+                        // error
+                        if (mlLoader.isFirstPage()) {
+                            mLoadingIndicator.setVisibility(View.INVISIBLE);
+                            showErrorMessage();
+                        }
+                    }
+                }
+
+                @Override
+                public void onLoaderReset(Loader<MovieList> loader) {
+
+                }
+            };
 }

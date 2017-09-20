@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <include layout="@layout/merge_progress_error" />
 
@@ -15,35 +16,32 @@
             android:id="@+id/frame_detail_bg"
             android:layout_width="match_parent"
             android:layout_height="@dimen/detail_title_bg_height"
-            android:background="@color/defaultTitleBg"
+            android:background="@color/default_title_bg"
             android:elevation="4dp"
             android:paddingEnd="@dimen/detail_horizontal_spacing"
             android:paddingStart="@dimen/detail_horizontal_spacing">
 
             <TextView
+                tools:text="Movie Title"
                 android:id="@+id/tv_detail_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:ellipsize="end"
                 android:maxLines="2"
-                android:textColor="@color/defaultTitleText"
-                android:textSize="@dimen/detail_text_size_title"
-                android:textStyle="bold" />
+                style="@style/MovieTitle" />
 
         </FrameLayout>
 
-        <ScrollView
+        <android.support.v4.widget.NestedScrollView
+            android:id="@+id/scrollable_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginEnd="@dimen/detail_horizontal_spacing"
-            android:layout_marginStart="@dimen/detail_horizontal_spacing"
-            android:layout_marginTop="@dimen/detail_vertical_spacing_normal">
+            android:paddingEnd="@dimen/detail_horizontal_spacing"
+            android:paddingStart="@dimen/detail_horizontal_spacing"
+            android:paddingTop="@dimen/detail_vertical_spacing_normal">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:descendantFocusability="blocksDescendants">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -61,49 +59,52 @@
                         android:src="@drawable/placeholder_image_27x40" />
 
                     <TextView
+                        tools:text="2017"
                         android:id="@+id/tv_detail_release"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        style="@style/DetailRelease"
                         android:layout_alignTop="@id/iv_detail_poster"
                         android:layout_marginStart="32dp"
                         android:layout_marginTop="@dimen/detail_vertical_spacing_normal"
-                        android:layout_toEndOf="@id/iv_detail_poster"
-                        android:lines="1"
-                        android:textSize="@dimen/detail_text_size_release" />
+                        android:layout_toEndOf="@id/iv_detail_poster" />
 
                     <TextView
+                        tools:text="1h30min"
                         android:id="@+id/tv_detail_duration"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        style="@style/DetailDuration"
                         android:layout_alignStart="@id/tv_detail_release"
                         android:layout_below="@id/tv_detail_release"
-                        android:layout_marginTop="@dimen/detail_vertical_spacing_small"
-                        android:lines="1"
-                        android:textSize="@dimen/detail_text_size_duration"
-                        android:textStyle="bold|italic" />
+                        android:layout_marginTop="@dimen/detail_vertical_spacing_small" />
 
                     <TextView
+                        tools:text="7.3/10"
                         android:id="@+id/tv_detail_score"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                        style="@style/DetailScore"
                         android:layout_alignStart="@id/tv_detail_release"
                         android:layout_below="@id/tv_detail_duration"
-                        android:layout_marginTop="@dimen/detail_vertical_spacing_normal"
-                        android:lines="1"
-                        android:textColor="@android:color/black"
-                        android:textSize="@dimen/detail_text_size_score" />
+                        android:layout_marginTop="@dimen/detail_vertical_spacing_normal" />
+
+                    <ImageView
+                        android:id="@+id/iv_favorite"
+                        android:layout_width="@dimen/favorite_size"
+                        android:layout_height="@dimen/favorite_size"
+                        android:layout_alignTop="@id/tv_detail_release"
+                        android:layout_alignParentEnd="true"
+                        android:src="@drawable/ic_favorite_off_24dp"
+                        android:layout_marginEnd="@dimen/detail_horizontal_spacing" />
 
                 </RelativeLayout>
 
                 <TextView
+                    tools:text="Sed et velit nec nibh dignissim luctus. Aliquam quis enim in leo gravida laoreet. Maecenas suscipit sollicitudin risus, eu lobortis mauris scelerisque sit amet."
                     android:id="@+id/tv_detail_summary"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    style="@style/DetailSummary"
                     android:layout_marginTop="@dimen/detail_vertical_spacing_big"
-                    android:textSize="@dimen/detail_text_size_summary" />
+                    android:layout_width="wrap_content" />
+
+                <include layout="@layout/merge_trailers_reviews"/>
 
             </LinearLayout>
-        </ScrollView>
+        </android.support.v4.widget.NestedScrollView>
 
     </LinearLayout>
 </FrameLayout>
